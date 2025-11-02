@@ -43,7 +43,7 @@ export class Order {
 
   // Garçom que fez o pedido
   @Prop({ required: true })
-  waiter: string;
+  waiterId: string;
 
   /// FINANCEIRO
 

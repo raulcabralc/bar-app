@@ -35,7 +35,7 @@ export class OrderService {
       "number",
       "items",
       "type",
-      "waiter",
+      "waiterId",
       "subtotal",
       "paymentMethod",
       "origin",

@@ -16,7 +16,7 @@ export class CreateOrderDto {
   type: OrderType;
   tableNumber?: number;
   address?: Address;
-  waiter: string;
+  waiterId: string;
   subtotal: number;
   discount: number;
   deliveryFee: number;
