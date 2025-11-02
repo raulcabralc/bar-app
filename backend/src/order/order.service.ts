@@ -50,6 +50,8 @@ export class OrderService {
       "complement",
     ];
 
+    const itemsFields = ["itemId", "itemName", "quantity"];
+
     const otherFields = [
       "id",
       "status",
@@ -112,6 +114,25 @@ export class OrderService {
       return {
         success: false,
         message: `missing required address fields: ${missingAddressFields.join(", ")}`,
+      };
+    }
+
+    const missingItemsFields: string[] = [];
+
+    if (order.items) {
+      for (let item in order.items) {
+        for (const field of itemsFields) {
+          if (!order.items[item][field]) {
+            missingItemsFields.push(field);
+          }
+        }
+      }
+    }
+
+    if (missingItemsFields.length > 0) {
+      return {
+        success: false,
+        message: `missing required items fields: ${missingItemsFields.join(", ")}`,
       };
     }
 
