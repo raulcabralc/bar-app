@@ -5,6 +5,7 @@ import { OrderType } from "./types/enums/type.enum";
 import { OrderStatus } from "./types/enums/status.enum";
 import { Order } from "./order.schema";
 import type { OrderReturn } from "./types/interfaces/success.interface";
+import { OrderPriority } from "./types/enums/priority.enum";
 
 @Injectable()
 export class OrderService {
@@ -57,8 +58,8 @@ export class OrderService {
       "address",
       "change",
       "isPaid",
-      "startedPreparing",
-      "finishedPreparing",
+      "startPreparing",
+      "finishPreparing",
     ];
 
     for (const field of requiredFields) {
@@ -137,5 +138,118 @@ export class OrderService {
       };
 
     return deletedOrder;
+  }
+
+  /// UPDATE
+
+  async changePriority(
+    id: string,
+    priority: OrderPriority,
+  ): Promise<Order | OrderReturn> {
+    if (
+      (priority !== OrderPriority.HIGH && priority !== OrderPriority.NORMAL) ||
+      !this.isValidPriority(priority)
+    ) {
+      return {
+        success: false,
+        message: `Invalid priority value: ${priority}. Accepted values: HIGH, NORMAL.`,
+      };
+    }
+
+    const updatedOrder = await this.orderRepository.changePriority(
+      id,
+      priority,
+    );
+
+    if (!updatedOrder)
+      return {
+        success: false,
+        message: `Order with id ${id} not found.`,
+      };
+
+    return updatedOrder;
+  }
+
+  async changeStatus(
+    id: string,
+    status: OrderStatus,
+  ): Promise<Order | OrderReturn> {
+    if (
+      (status !== OrderStatus.PENDING &&
+        status !== OrderStatus.PREPARING &&
+        status !== OrderStatus.SERVED) ||
+      !this.isValidStatus(status)
+    ) {
+      return {
+        success: false,
+        message: `Invalid status value: ${status}. Accepted values: PENDING, PREPARING, SERVED.`,
+      };
+    }
+
+    const updatedOrder = await this.orderRepository.changeStatus(id, status);
+
+    if (!updatedOrder)
+      return {
+        success: false,
+        message: `Order with id ${id} not found.`,
+      };
+
+    return updatedOrder;
+  }
+
+  async confirmPayment(id: string): Promise<Order | OrderReturn> {
+    const updatedOrder = await this.orderRepository.confirmPayment(id);
+
+    if (!updatedOrder)
+      return {
+        success: false,
+        message: `Order with id ${id} not found.`,
+      };
+
+    return updatedOrder;
+  }
+
+  async startPreparing(id: string): Promise<Order | OrderReturn> {
+    const startPreparing = new Date();
+
+    const updatedOrder = await this.orderRepository.startPreparing(
+      id,
+      startPreparing,
+    );
+
+    if (!updatedOrder)
+      return {
+        success: false,
+        message: `Order with id ${id} not found.`,
+      };
+
+    return updatedOrder;
+  }
+
+  async finishPreparing(id: string): Promise<Order | OrderReturn> {
+    const finishPreparing = new Date();
+
+    const updatedOrder = await this.orderRepository.finishPreparing(
+      id,
+      finishPreparing,
+    );
+
+    if (!updatedOrder)
+      return {
+        success: false,
+        message: `Order with id ${id} not found.`,
+      };
+
+    return updatedOrder;
+  }
+
+  /// TYPE GUARDS
+
+  private isValidPriority(priority: string): priority is OrderPriority {
+    return Object.values(OrderPriority).includes(priority as OrderPriority);
+  }
+
+  private isValidStatus(status: string): status is OrderStatus {
+    return Object.values(OrderStatus).includes(status as OrderStatus);
   }
 }
