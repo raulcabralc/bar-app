@@ -3,10 +3,12 @@ import { AppController } from "./app.controller";
 import { OrderModule } from "./order/order.module";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
+import { WorkerModule } from "./worker/worker.module";
 
 @Module({
   imports: [
     OrderModule,
+    WorkerModule,
 
     ConfigModule.forRoot({
       isGlobal: true,
