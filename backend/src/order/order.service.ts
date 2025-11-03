@@ -50,7 +50,7 @@ export class OrderService {
       "complement",
     ];
 
-    const itemsFields = ["itemId", "itemName", "quantity"];
+    const itemsFields = ["itemId", "itemName", "quantity", "ingredients"];
 
     const otherFields = [
       "id",
