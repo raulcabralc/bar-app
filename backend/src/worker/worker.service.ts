@@ -13,8 +13,8 @@ export class WorkerService {
     return await this.workerRepository.index();
   }
 
-  async findOne(id: string) {
-    const worker = this.workerRepository.findOne(id);
+  async findOne(id: string): Promise<Worker | WorkerReturn> {
+    const worker = await this.workerRepository.findOne(id);
 
     if (!worker) {
       return {
@@ -26,7 +26,7 @@ export class WorkerService {
     return worker;
   }
 
-  async createWorker(worker: CreateWorkerDto) {
+  async createWorker(worker: CreateWorkerDto): Promise<Worker | WorkerReturn> {
     const missingFields: string[] = [];
 
     const requiredFields = [
@@ -83,7 +83,7 @@ export class WorkerService {
     return await this.workerRepository.createWorker(workerCreation);
   }
 
-  async deleteWorker(id: string) {
+  async deleteWorker(id: string): Promise<Worker | WorkerReturn> {
     const deletedWorker = await this.workerRepository.deleteWorker(id);
 
     if (!deletedWorker)
@@ -97,7 +97,7 @@ export class WorkerService {
 
   /// UPDATE
 
-  async changeRole(id: string, role: string) {
+  async changeRole(id: string, role: string): Promise<Worker | WorkerReturn> {
     const worker = await this.workerRepository.findOne(id);
 
     if (!worker)
@@ -120,10 +120,10 @@ export class WorkerService {
       };
     }
 
-    return this.workerRepository.changeRole(id, role);
+    return await this.workerRepository.changeRole(id, role);
   }
 
-  async changeEmail(id: string, email: string) {
+  async changeEmail(id: string, email: string): Promise<Worker | WorkerReturn> {
     const worker = await this.workerRepository.findOne(id);
 
     if (!worker)
@@ -140,11 +140,11 @@ export class WorkerService {
         message: `Email ${email} is already registered.`,
       };
 
-    return this.workerRepository.changeEmail(id, email);
+    return await this.workerRepository.changeEmail(id, email);
   }
 
-  async deactivate(id: string) {
-    const worker = await this.workerRepository.findOne(id);
+  async deactivate(id: string): Promise<Worker | WorkerReturn> {
+    const worker = await this.workerRepository.deactivate(id);
 
     if (!worker)
       return {
@@ -152,11 +152,11 @@ export class WorkerService {
         message: `Worker with id ${id} not found.`,
       };
 
-    if (!worker.isActive) return this.workerRepository.deactivate(id);
+    return worker;
   }
 
-  async activate(id: string) {
-    const worker = await this.workerRepository.findOne(id);
+  async activate(id: string): Promise<Worker | WorkerReturn> {
+    const worker = await this.workerRepository.activate(id);
 
     if (!worker)
       return {
@@ -164,6 +164,6 @@ export class WorkerService {
         message: `Worker with id ${id} not found.`,
       };
 
-    return this.workerRepository.activate(id);
+    return worker;
   }
 }

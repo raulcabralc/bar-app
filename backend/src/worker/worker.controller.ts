@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from "@nestjs/common";
 import { WorkerService } from "./worker.service";
 import { CreateWorkerDto } from "./types/dto/create-worker.dto";
 
@@ -24,5 +32,15 @@ export class WorkerController {
   @Delete("/delete/:id")
   async deleteWorker(@Param("id") id: string) {
     return await this.workerService.deleteWorker(id);
+  }
+
+  @Patch("/deactivate/:id")
+  async deactivate(@Param("id") id: string) {
+    return await this.workerService.deactivate(id);
+  }
+
+  @Patch("/activate/:id")
+  async activate(@Param("id") id: string) {
+    return await this.workerService.activate(id);
   }
 }

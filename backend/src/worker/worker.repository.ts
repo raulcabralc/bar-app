@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { CreateWorkerDto } from "./types/dto/create-worker.dto";
+import { Worker } from "./worker.schema";
 
 @Injectable()
 export class WorkerRepository {
