@@ -1,4 +1,4 @@
-import { IsEmail, IsString } from "class-validator";
+import { IsDateString, IsEmail, IsString } from "class-validator";
 import { WorkerRole } from "../enums/role.enum";
 
 export class CreateWorkerDto {
@@ -17,4 +17,7 @@ export class CreateWorkerDto {
 
   @IsString()
   pin: string;
+
+  @IsDateString()
+  hireDate: Date;
 }
