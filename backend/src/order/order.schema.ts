@@ -9,6 +9,9 @@ import type { Address } from "./types/interfaces/address.interface";
 
 @Schema()
 export class Order {
+  @Prop({ required: true })
+  hourSlot: string;
+
   // Prioridade do pedido
   @Prop({ required: true })
   priority: OrderPriority;
@@ -20,6 +23,9 @@ export class Order {
   // Status do pedido
   @Prop({ required: true })
   status: OrderStatus;
+
+  @Prop({ required: false })
+  cancellationReason?: string;
 
   // Hora que o pedido foi feito
   @Prop({ required: true })
@@ -44,6 +50,16 @@ export class Order {
   // Garçom que fez o pedido
   @Prop({ required: true })
   waiterId: string;
+
+  @Prop({ required: true })
+  waiterName: string;
+
+  // Garçom que fechou a conta
+  @Prop({ required: false })
+  transactionHandlerId?: string;
+
+  @Prop({ required: false })
+  transactionHandlerName?: string;
 
   /// FINANCEIRO
 
@@ -92,6 +108,9 @@ export class Order {
   // Origem do pedido
   @Prop({ required: true })
   origin: Origin;
+
+  @Prop({ required: false })
+  customerCount: number;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

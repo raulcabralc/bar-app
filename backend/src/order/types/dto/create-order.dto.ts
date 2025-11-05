@@ -14,6 +14,9 @@ import {
 
 export class CreateOrderDto {
   @IsString()
+  hourSlot: string;
+
+  @IsString()
   priority: OrderPriority;
 
   @IsNumber()
@@ -36,6 +39,17 @@ export class CreateOrderDto {
   @IsString()
   waiterId: string;
 
+  @IsString()
+  waiterName: string;
+
+  @IsOptional()
+  @IsString()
+  transactionHandlerId?: string;
+
+  @IsOptional()
+  @IsString()
+  transactionHandlerName?: string;
+
   @IsNumber()
   subtotal: number;
 
@@ -56,4 +70,12 @@ export class CreateOrderDto {
 
   @IsString()
   origin: Origin;
+
+  @IsOptional()
+  @IsNumber()
+  customerCount?: number;
+
+  @IsOptional()
+  @IsString()
+  cancellationReason?: string;
 }
