@@ -23,6 +23,14 @@ export class BusinessRepository {
     return business as Business;
   }
 
+  async findByOrderId(id: string): Promise<Business> {
+    const business = await this.businessModel.findOne({
+      originalOrderId: id,
+    });
+
+    return business as Business;
+  }
+
   async create(business: BusinessDTO): Promise<Business> {
     const createdBusiness = await this.businessModel.create(business);
 
@@ -290,7 +298,7 @@ export class BusinessRepository {
     return businessList as Business[];
   }
 
-  async findBytransactionHandlerId(
+  async findByTransactionHandlerId(
     transactionHandlerId: string,
   ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
@@ -300,7 +308,7 @@ export class BusinessRepository {
     return businessList as Business[];
   }
 
-  async findBytransactionHandlerName(
+  async findByTransactionHandlerName(
     transactionHandlerName: string,
   ): Promise<Business[]> {
     const businessList = await this.businessModel.find({

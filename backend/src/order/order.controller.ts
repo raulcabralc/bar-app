@@ -68,4 +68,12 @@ export class OrderController {
   async finishPreparing(@Param("id") id: string) {
     return await this.orderService.finishPreparing(id);
   }
+
+  @Patch("/transaction/:waiterId/:orderId")
+  async setTransactionHandler(
+    @Param("waiterId") waiterId: string,
+    @Param("orderId") orderId: string,
+  ) {
+    return await this.orderService.setTransactionHandler(waiterId, orderId);
+  }
 }

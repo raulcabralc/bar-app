@@ -25,6 +25,18 @@ export class BusinessService {
     return business as Business;
   }
 
+  async findByOrderId(id: string): Promise<Business | BusinessReturn> {
+    const business = await this.businessRepository.findByOrderId(id);
+
+    if (!business)
+      return {
+        success: false,
+        message: `Relatory for order with id ${id} not found.`,
+      };
+
+    return business as Business;
+  }
+
   async create(business: BusinessDTO): Promise<Business | BusinessReturn> {
     const missingFields: string[] = [];
 

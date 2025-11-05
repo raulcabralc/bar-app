@@ -11,12 +11,14 @@ import { Origin } from "./types/enums/origin.enum";
 import { BusinessRepository } from "src/business/business.repository";
 import { BusinessDTO } from "src/business/types/dto/business.dto";
 import { WeekDay } from "src/business/types/enums/week-day.enum";
+import { WorkerRepository } from "src/worker/worker.repository";
 
 @Injectable()
 export class OrderService {
   constructor(
     private readonly orderRepository: OrderRepository,
     private readonly businessRepository: BusinessRepository,
+    private readonly workerRepository: WorkerRepository,
   ) {}
 
   async index() {
@@ -39,12 +41,19 @@ export class OrderService {
     const missingFields: string[] = [];
 
     const requiredFields = [
+      "hourSlot",
       "priority",
       "number",
       "items",
       "type",
       "waiterId",
+      "waiterName",
+      "transactionHandlerId",
+      "transactionHandlerName",
       "subtotal",
+      "discount",
+      "total",
+      "amountPaid",
       "paymentMethod",
       "origin",
     ];
@@ -64,6 +73,7 @@ export class OrderService {
       "category",
       "quantity",
       "ingredients",
+      "unitPrice",
     ];
 
     for (const field of requiredFields) {
@@ -218,7 +228,9 @@ export class OrderService {
     if (!Object.values(OrderStatus).includes(status)) {
       return {
         success: false,
-        message: `Invalid status value: ${status}. Accepted values: PENDING, PREPARING, SERVED.`,
+        message: `Invalid status value: ${status}. Accepted values: ${Object.values(
+          OrderStatus,
+        ).join(", ")}.`,
       };
     }
 
@@ -250,30 +262,83 @@ export class OrderService {
         day = WeekDay.SATURDAY;
       }
 
-      // const orderRelatory: BusinessDTO = {
-      //   originalOrderId: id,
-      //   date: new Date().toISOString().split("T")[0],
-      //   weekDay: day,
-      //   total: updatedOrder.total,
-      //   paymentMethod: updatedOrder.paymentMethod,
-      //   origin: updatedOrder.origin,
-      //   itemsDenormalized: updatedOrder.items,
-      //   waiterId: updatedOrder.waiterId,
-      //   status: updatedOrder.status,
-      //   priority: updatedOrder.priority,
-      //   number: updatedOrder.number,
-      //   tableNumber: updatedOrder.tableNumber,
-      //   address: updatedOrder.address,
-      //   ordered: updatedOrder.ordered,
-      //   startedPreparing: updatedOrder.startedPreparing,
-      //   finishedPreparing: updatedOrder.finishedPreparing,
-      //   delivered: new Date().toISOString(),
-      // };
+      if (!updatedOrder.startedPreparing || !updatedOrder.finishedPreparing) {
+        return {
+          success: false,
+          message: `Order ${id} missing preparation timestamps, skipping business report`,
+        };
+      }
 
-      // CONTINUAR A INTEGRAÇÃO DE FINALIZAR O PEDIDO
-      // E CRIAR O RELATÓRIO LOGO EM SEGUIDA DO MESMO
+      let orderRelatory: BusinessDTO = {
+        originalOrderId: id,
+        date: new Date().toISOString().split("T")[0],
+        weekDay: day,
+        hourSlot: updatedOrder.hourSlot,
+        subtotal: updatedOrder.subtotal,
+        discount: updatedOrder.discount,
+        deliveryFee:
+          updatedOrder.type === OrderType.DELIVERY
+            ? updatedOrder.deliveryFee
+            : undefined,
+        total: updatedOrder.total,
+        customerCount: updatedOrder.customerCount,
+        paymentMethod: updatedOrder.paymentMethod,
+        origin: updatedOrder.origin,
+        itemsDenormalized: updatedOrder.items.map((item) => ({
+          itemId: item.itemId,
+          itemName: item.itemName,
+          category: item.category,
+          quantity: item.quantity,
+          ingredients: item.ingredients,
+          unitPrice: item.unitPrice,
+          totalPrice: item.unitPrice * item.quantity,
+          modifications: item.observation,
+        })),
+        totalItemsCount: updatedOrder.items.reduce(
+          (acc, item) => acc + item.quantity,
+          0,
+        ),
+        waiterId: updatedOrder.waiterId,
+        waiterName: updatedOrder.waiterName,
+        transactionHandlerId: updatedOrder.transactionHandlerId,
+        transactionHandlerName: updatedOrder.transactionHandlerName,
+        timePreparing: Math.round(
+          (updatedOrder.finishedPreparing.getTime() -
+            updatedOrder.startedPreparing.getTime()) /
+            60000,
+        ),
+        orderType: updatedOrder.type,
+        timeToStartPreparing: Math.round(
+          (updatedOrder.startedPreparing.getTime() -
+            updatedOrder.ordered.getTime()) /
+            60000,
+        ),
+        deliveryNeighborhood:
+          updatedOrder.type === OrderType.DELIVERY
+            ? updatedOrder.address.neighborhood
+            : undefined,
+        isCanceled: updatedOrder.status === OrderStatus.CANCELED,
+        cancellationReason: updatedOrder.cancellationReason || undefined,
+      };
 
-      // await this.businessRepository.create(orderRelatory);
+      if (updatedOrder.type === OrderType.DELIVERY) {
+        if (updatedOrder.status === OrderStatus.DONE) {
+          return updatedOrder;
+        }
+
+        if (updatedOrder.status === OrderStatus.SERVED) {
+          orderRelatory = {
+            ...orderRelatory,
+            timeToDelivery: Math.round(
+              (new Date().getTime() -
+                updatedOrder.finishedPreparing.getTime()) /
+                60000,
+            ),
+          };
+        }
+      }
+
+      await this.businessRepository.create(orderRelatory);
     }
 
     return updatedOrder;
@@ -320,6 +385,32 @@ export class OrderService {
       return {
         success: false,
         message: `Order with id ${id} not found.`,
+      };
+
+    return updatedOrder;
+  }
+
+  async setTransactionHandler(waiterId: string, orderId: string) {
+    const waiter = await this.workerRepository.findOne(waiterId);
+
+    if (!waiter)
+      return {
+        success: false,
+        message: `Worker with id ${waiterId} not found.`,
+      };
+
+    const waiterName = waiter.displayName;
+
+    const updatedOrder = await this.orderRepository.setTransactionHandler(
+      waiterId,
+      waiterName,
+      orderId,
+    );
+
+    if (!updatedOrder)
+      return {
+        success: false,
+        message: `Order with id ${orderId} not found.`,
       };
 
     return updatedOrder;

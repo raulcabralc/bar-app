@@ -11,6 +11,11 @@ export class BusinessController {
     return await this.businessService.findOne(id);
   }
 
+  @Get("/order/:id")
+  async findByOrderId(@Param("id") id: string) {
+    return await this.businessService.findByOrderId(id);
+  }
+
   @Post("/create")
   async create(@Body() business: BusinessDTO) {
     return await this.businessService.create(business);

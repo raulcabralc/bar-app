@@ -5,10 +5,12 @@ import { OrderService } from "./order.service";
 import { OrderRepository } from "./order.repository";
 import { OrderController } from "./order.controller";
 import { BusinessModule } from "src/business/business.module";
+import { WorkerModule } from "src/worker/worker.module";
 
 @Module({
   imports: [
     BusinessModule,
+    WorkerModule,
 
     MongooseModule.forFeature([{ name: "Order", schema: OrderSchema }]),
   ],

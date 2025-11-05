@@ -1,10 +1,11 @@
 import { ItemCategory } from "../enums/item-category.enum";
 
 export interface OrderItem {
-  itemId: number;
+  itemId: string;
   itemName: string;
   category: ItemCategory;
   quantity: number;
   ingredients: string[];
-  observation?: string;
+  unitPrice: number;
+  observation?: string[];
 }

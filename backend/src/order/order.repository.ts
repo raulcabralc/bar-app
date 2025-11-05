@@ -99,4 +99,21 @@ export class OrderRepository {
 
     return updatedOrder as Order;
   }
+
+  async setTransactionHandler(
+    waiterId: string,
+    waiterName: string,
+    orderId: string,
+  ): Promise<Order> {
+    const updatedOrder = await this.orderModel.findByIdAndUpdate(
+      orderId,
+      {
+        transactionHandlerId: waiterId,
+        transactionHandlerName: waiterName,
+      },
+      { new: true },
+    );
+
+    return updatedOrder as Order;
+  }
 }
