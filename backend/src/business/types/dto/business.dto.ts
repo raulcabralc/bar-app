@@ -23,7 +23,7 @@ export class BusinessDTO {
   weekDay: WeekDay;
 
   @IsString()
-  hourSlot: string;
+  hourSlot: number;
 
   @IsNumber()
   subtotal: number;

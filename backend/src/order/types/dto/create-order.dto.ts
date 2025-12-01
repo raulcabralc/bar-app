@@ -14,9 +14,6 @@ import {
 
 export class CreateOrderDto {
   @IsString()
-  hourSlot: string;
-
-  @IsString()
   priority: OrderPriority;
 
   @IsNumber()

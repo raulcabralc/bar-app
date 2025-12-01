@@ -41,7 +41,6 @@ export class OrderService {
     const missingFields: string[] = [];
 
     const requiredFields = [
-      "hourSlot",
       "priority",
       "number",
       "items",
@@ -277,7 +276,7 @@ export class OrderService {
         originalOrderId: id,
         date: new Date().toISOString().split("T")[0],
         weekDay: day,
-        hourSlot: updatedOrder.hourSlot,
+        hourSlot: updatedOrder.ordered.getHours(),
         subtotal: updatedOrder.subtotal,
         discount: updatedOrder.discount,
         deliveryFee:
@@ -359,13 +358,19 @@ export class OrderService {
   }
 
   async confirmPayment(id: string): Promise<Order | OrderReturn> {
-    const updatedOrder = await this.orderRepository.confirmPayment(id);
+    let updatedOrder = await this.orderRepository.confirmPayment(id);
 
     if (!updatedOrder)
       return {
         success: false,
         message: `Order with id ${id} not found.`,
       };
+
+    if (updatedOrder.finishedPreparing) {
+      const statusUpdate = await this.changeStatus(id, OrderStatus.DONE);
+
+      return statusUpdate;
+    }
 
     return updatedOrder;
   }
@@ -388,9 +393,24 @@ export class OrderService {
   }
 
   async finishPreparing(id: string): Promise<Order | OrderReturn> {
+    const order = await this.orderRepository.findOne(id);
+
+    if (!order)
+      return {
+        success: false,
+        message: `Order with id ${id} not found.`,
+      };
+
+    if (!order.startedPreparing) {
+      return {
+        success: false,
+        message: `Order with id ${id} has not started preparing yet.`,
+      };
+    }
+
     const finishPreparing = new Date();
 
-    const updatedOrder = await this.orderRepository.finishPreparing(
+    let updatedOrder = await this.orderRepository.finishPreparing(
       id,
       finishPreparing,
     );
@@ -400,6 +420,12 @@ export class OrderService {
         success: false,
         message: `Order with id ${id} not found.`,
       };
+
+    if (updatedOrder.isPaid) {
+      const statusUpdate = await this.changeStatus(id, OrderStatus.DONE);
+
+      return statusUpdate;
+    }
 
     return updatedOrder;
   }

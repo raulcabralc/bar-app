@@ -92,7 +92,6 @@ export class OrderRepository {
       id,
       {
         finishedPreparing: finishPreparing,
-        status: OrderStatus.DONE,
       },
       { new: true },
     );

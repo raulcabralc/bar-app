@@ -9,9 +9,6 @@ import type { Address } from "./types/interfaces/address.interface";
 
 @Schema()
 export class Order {
-  @Prop({ required: true })
-  hourSlot: string;
-
   // Prioridade do pedido
   @Prop({ required: true })
   priority: OrderPriority;

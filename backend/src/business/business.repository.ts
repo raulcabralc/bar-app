@@ -39,10 +39,10 @@ export class BusinessRepository {
 
   /// CONSULTAS DE AGREGAÇÃO
 
-  async getDailySummary(date: Date): Promise<DailySummary> {
-    const startOfDay = new Date(date.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(date.setHours(23, 59, 59, 999));
-
+  async getDailySummary(
+    startOfDay: Date,
+    endOfDay: Date,
+  ): Promise<DailySummary> {
     const dailySummary = await this.businessModel.aggregate([
       {
         $match: {
@@ -65,7 +65,7 @@ export class BusinessRepository {
           totalOrders: 1,
           totalDiscount: 1,
           totalDeliveryFee: 1,
-          averageTicket: { $divide: ["$totalRevenue", "totalOrders"] },
+          averageTicket: { $divide: ["$totalRevenue", "$totalOrders"] },
         },
       },
     ]);
@@ -98,11 +98,11 @@ export class BusinessRepository {
     return result as AverageTicket[];
   }
 
-  async getTotalSalesByOrigin(): Promise<SalesByOrigin> {
+  async getTotalSalesByOrigin(): Promise<SalesByOrigin[]> {
     const result = await this.businessModel.aggregate([
       {
         $group: {
-          _id: null,
+          _id: "$origin",
           origin: { $first: "$origin" },
           totalRevenue: { $sum: "$total" },
           totalOrders: { $sum: 1 },
@@ -114,12 +114,12 @@ export class BusinessRepository {
           origin: 1,
           totalRevenue: 1,
           totalOrders: 1,
-          averageTicket: { $divide: ["$totalRevenue", "totalOrders"] },
+          averageTicket: { $divide: ["$totalRevenue", "$totalOrders"] },
         },
       },
     ]);
 
-    return result[0] as SalesByOrigin;
+    return result as SalesByOrigin[];
   }
 
   async getTopSellingItems(limit: number): Promise<TopItems[]> {
@@ -130,9 +130,9 @@ export class BusinessRepository {
       {
         $group: {
           _id: "$itemsDenormalized.itemId",
-          itemName: { $first: "itemsDenormalized.itemName" },
-          category: { $first: "itemsDenormalized.category" },
-          totalUnitsSold: { $sum: "itemsDenormalized.quantity" },
+          itemName: { $first: "$itemsDenormalized.itemName" },
+          category: { $first: "$itemsDenormalized.category" },
+          totalUnitsSold: { $sum: "$itemsDenormalized.quantity" },
         },
       },
       {
@@ -152,7 +152,7 @@ export class BusinessRepository {
       },
     ]);
 
-    return result[0] as TopItems[];
+    return result as TopItems[];
   }
 
   /// CONSULTAS GERAIS
@@ -175,9 +175,12 @@ export class BusinessRepository {
     return businessList as Business[];
   }
 
-  async findByHourSlot(startHour: Date, endHour: Date): Promise<Business[]> {
+  async findByHourSlot(
+    startHour: number,
+    endHour: number,
+  ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
-      date: { $gte: startHour, $lte: endHour },
+      hourSlot: { $gte: startHour, $lte: endHour },
     });
 
     return businessList as Business[];

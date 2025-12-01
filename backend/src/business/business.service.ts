@@ -52,7 +52,7 @@ export class BusinessService {
       "origin",
       "itemsDenormalized",
       "totalItemsCount",
-      "timeToStartPreparing",
+      "timeToStartValue",
       "timePreparing",
       "orderType",
       "waiterId",
@@ -162,5 +162,361 @@ export class BusinessService {
     const businessCreation = { ...business };
 
     return (await this.businessRepository.create(businessCreation)) as Business;
+  }
+
+  /// CONSULTAS AGREGADAS
+
+  async getDailySummary(date?: string) {
+    if (!date) {
+      date = new Date().toISOString().split("T")[0].slice(0, 10);
+    }
+
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const result = await this.businessRepository.getDailySummary(
+      startOfDay,
+      endOfDay,
+    );
+
+    if (!result) {
+      return {
+        totalRevenue: 0,
+        totalOrders: 0,
+        totalDiscount: 0,
+        totalDeliveryFee: 0,
+        averageTicket: 0,
+      };
+    }
+
+    return result;
+  }
+
+  async getAverageTicketByWaiter() {
+    return await this.businessRepository.getAverageTicketByWaiter();
+  }
+
+  async getTotalSalesByOrigin() {
+    return await this.businessRepository.getTotalSalesByOrigin();
+  }
+
+  async getTopSellingItems(limit?: number) {
+    if (!limit) {
+      limit = 10;
+    }
+
+    return await this.businessRepository.getTopSellingItems(limit);
+  }
+
+  /// CONSULTAS GERAIS
+
+  // DATA
+
+  async findByDateRange(
+    startValue: Date,
+    endValue?: Date,
+  ): Promise<Business[] | BusinessReturn> {
+    if (!startValue) {
+      return {
+        success: false,
+        message: "startValue is required.",
+      };
+    }
+
+    if (!endValue) {
+      endValue = startValue;
+    }
+
+    return await this.businessRepository.findByDateRange(startValue, endValue);
+  }
+
+  async findByWeekDay(weekDay: WeekDay): Promise<Business[] | BusinessReturn> {
+    if (!weekDay || !Object.values(WeekDay).includes(weekDay)) {
+      return {
+        success: false,
+        message: `Invalid weekDay value. Valid week days: ${Object.values(WeekDay).join(", ")}`,
+      };
+    }
+
+    return await this.businessRepository.findByWeekDay(weekDay);
+  }
+
+  async findByHourSlot(
+    startValue: number,
+    endValue?: number,
+  ): Promise<Business[] | BusinessReturn> {
+    if (!startValue) {
+      return {
+        success: false,
+        message: "startValue is required.",
+      };
+    }
+
+    if (!endValue) {
+      endValue = startValue;
+    }
+
+    return await this.businessRepository.findByHourSlot(startValue, endValue);
+  }
+
+  // FINANCEIRO
+
+  async findByDiscount(
+    startValue: number,
+    endValue?: number,
+  ): Promise<Business[] | BusinessReturn> {
+    if (!startValue) {
+      return {
+        success: false,
+        message: "startValue is required.",
+      };
+    }
+
+    if (!endValue) {
+      endValue = startValue;
+    }
+
+    return await this.businessRepository.findByDiscount(startValue, endValue);
+  }
+
+  async findByDeliveryFee(
+    startValue: number,
+    endValue?: number,
+  ): Promise<Business[] | BusinessReturn> {
+    if (!startValue) {
+      return {
+        success: false,
+        message: "startValue is required.",
+      };
+    }
+
+    if (!endValue) {
+      endValue = startValue;
+    }
+
+    return await this.businessRepository.findByDeliveryFee(
+      startValue,
+      endValue,
+    );
+  }
+
+  async findByCustomerCount(
+    startValue: number,
+    endValue?: number,
+  ): Promise<Business[] | BusinessReturn> {
+    if (!startValue) {
+      return {
+        success: false,
+        message: "startValue is required.",
+      };
+    }
+
+    if (!endValue) {
+      endValue = startValue;
+    }
+
+    return await this.businessRepository.findByCustomerCount(
+      startValue,
+      endValue,
+    );
+  }
+
+  async findByPaymentMethod(
+    paymentMethod: PaymentMethod,
+  ): Promise<Business[] | BusinessReturn> {
+    if (
+      !paymentMethod ||
+      !Object.values(PaymentMethod).includes(paymentMethod)
+    ) {
+      return {
+        success: false,
+        message: `Invalid payment method: ${paymentMethod}. Valid payment methods: ${Object.values(PaymentMethod).join(", ")}}`,
+      };
+    }
+
+    return await this.businessRepository.findByPaymentMethod(paymentMethod);
+  }
+
+  async findByOrigin(origin: Origin): Promise<Business[] | BusinessReturn> {
+    if (!origin || !Object.values(Origin).includes(origin)) {
+      return {
+        success: false,
+        message: `Invalid payment method: ${origin}. Valid payment methods: ${Object.values(PaymentMethod).join(", ")}}`,
+      };
+    }
+
+    return await this.businessRepository.findByOrigin(origin);
+  }
+
+  // ESTOQUE & PRODUTO
+
+  async findByTotalItems(
+    startValue: number,
+    endValue?: number,
+  ): Promise<Business[] | BusinessReturn> {
+    if (!startValue) {
+      return {
+        success: false,
+        message: "startValue is required.",
+      };
+    }
+
+    if (!endValue) {
+      endValue = startValue;
+    }
+
+    return await this.businessRepository.findByTotalItems(startValue, endValue);
+  }
+
+  async findByTimeToStartPreparing(
+    startValue: number,
+    endValue?: number,
+  ): Promise<Business[] | BusinessReturn> {
+    if (!startValue) {
+      return {
+        success: false,
+        message: "startValue is required.",
+      };
+    }
+
+    if (!endValue) {
+      endValue = startValue;
+    }
+
+    return await this.businessRepository.findByTimeToStartPreparing(
+      startValue,
+      endValue,
+    );
+  }
+
+  async findByTimePreparing(
+    startValue: number,
+    endValue?: number,
+  ): Promise<Business[] | BusinessReturn> {
+    if (!startValue) {
+      return {
+        success: false,
+        message: "startValue is required.",
+      };
+    }
+
+    if (!endValue) {
+      endValue = startValue;
+    }
+
+    return await this.businessRepository.findByTimePreparing(
+      startValue,
+      endValue,
+    );
+  }
+
+  async findByTimeToDelivery(
+    startValue: number,
+    endValue?: number,
+  ): Promise<Business[] | BusinessReturn> {
+    if (!startValue) {
+      return {
+        success: false,
+        message: "startValue is required.",
+      };
+    }
+
+    if (!endValue) {
+      endValue = startValue;
+    }
+
+    return await this.businessRepository.findByTimeToDelivery(
+      startValue,
+      endValue,
+    );
+  }
+
+  async findByWaiterId(waiterId: string): Promise<Business[] | BusinessReturn> {
+    if (!waiterId) {
+      return {
+        success: false,
+        message: "waiterId is required.",
+      };
+    }
+
+    return await this.businessRepository.findByWaiterId(waiterId);
+  }
+
+  async findByWaiterName(
+    waiterName: string,
+  ): Promise<Business[] | BusinessReturn> {
+    if (!waiterName) {
+      return {
+        success: false,
+        message: "waiterName is required.",
+      };
+    }
+
+    return await this.businessRepository.findByWaiterName(waiterName);
+  }
+
+  async findByTransactionHandlerId(
+    transactionHandlerId: string,
+  ): Promise<Business[] | BusinessReturn> {
+    if (!transactionHandlerId) {
+      return {
+        success: false,
+        message: "transactionHandlerId is required.",
+      };
+    }
+
+    return await this.businessRepository.findByTransactionHandlerId(
+      transactionHandlerId,
+    );
+  }
+
+  async findByTransactionHandlerName(
+    transactionHandlerName: string,
+  ): Promise<Business[] | BusinessReturn> {
+    if (!transactionHandlerName) {
+      return {
+        success: false,
+        message: "transactionHandlerName is required.",
+      };
+    }
+
+    return await this.businessRepository.findByTransactionHandlerName(
+      transactionHandlerName,
+    );
+  }
+
+  async findByDeliveryNeighborhood(
+    deliveryNeighborhood: string,
+  ): Promise<Business[] | BusinessReturn> {
+    if (!deliveryNeighborhood) {
+      return {
+        success: false,
+        message: "deliveryNeighborhood is required.",
+      };
+    }
+
+    return await this.businessRepository.findByDeliveryNeighborhood(
+      deliveryNeighborhood,
+    );
+  }
+
+  async findByCanceled(): Promise<Business[]> {
+    return await this.businessRepository.findByCanceled();
+  }
+
+  async findByCancelReason(
+    reason: string,
+  ): Promise<Business[] | BusinessReturn> {
+    if (!reason) {
+      return {
+        success: false,
+        message: "reason is required.",
+      };
+    }
+
+    return await this.businessRepository.findByCancelReason(reason);
   }
 }
