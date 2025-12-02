@@ -12,6 +12,9 @@ import { BusinessRepository } from "src/business/business.repository";
 import { BusinessDTO } from "src/business/types/dto/business.dto";
 import { WeekDay } from "src/business/types/enums/week-day.enum";
 import { WorkerRepository } from "src/worker/worker.repository";
+import { NotificationsGateway } from "src/notifications/notifications.gateway";
+import { NotificationEvent } from "src/notifications/types/enums/notification-event.enum";
+import { WorkerRole } from "src/worker/types/enums/role.enum";
 
 @Injectable()
 export class OrderService {
@@ -19,6 +22,7 @@ export class OrderService {
     private readonly orderRepository: OrderRepository,
     private readonly businessRepository: BusinessRepository,
     private readonly workerRepository: WorkerRepository,
+    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   async index() {
@@ -178,7 +182,20 @@ export class OrderService {
       finishedPreparing: null,
     };
 
-    return await this.orderRepository.createOrder(orderCreation);
+    this.notificationsGateway.notifyNewOrder(orderCreation);
+
+    const createdOrder = await this.orderRepository.createOrder(orderCreation);
+
+    this.notificationsGateway.notifyByRole(
+      WorkerRole.CHEF,
+      NotificationEvent.NEW_ORDER,
+      {
+        orderId: (createdOrder as any)._id.toString(),
+        orderData: orderCreation,
+      },
+    );
+
+    return createdOrder;
   }
 
   async deleteOrder(id: string): Promise<Order | OrderReturn> {
@@ -240,6 +257,12 @@ export class OrderService {
         success: false,
         message: `Order with id ${id} not found.`,
       };
+
+    this.notificationsGateway.notifiyOrderStatusChange(
+      id,
+      status,
+      updatedOrder,
+    );
 
     if (
       [OrderStatus.CANCELED, OrderStatus.DONE, OrderStatus.DELIVERED].includes(
@@ -352,6 +375,12 @@ export class OrderService {
       }
 
       await this.businessRepository.create(orderRelatory);
+
+      this.notificationsGateway.notifyAnalyticsUpdate({
+        type: "orderCompleted",
+        revenue: updatedOrder.total,
+        ordersToday: await this.getTodayOrders(),
+      });
     }
 
     return updatedOrder;
@@ -389,6 +418,12 @@ export class OrderService {
         message: `Order with id ${id} not found.`,
       };
 
+    this.notificationsGateway.notifiyOrderStatusChange(
+      id,
+      OrderStatus.PREPARING,
+      updatedOrder,
+    );
+
     return updatedOrder;
   }
 
@@ -420,6 +455,12 @@ export class OrderService {
         success: false,
         message: `Order with id ${id} not found.`,
       };
+
+    this.notificationsGateway.notifiyOrderStatusChange(
+      id,
+      "FINISHED_PREPARING",
+      updatedOrder,
+    );
 
     if (updatedOrder.isPaid) {
       const statusUpdate = await this.changeStatus(id, OrderStatus.DONE);
@@ -454,5 +495,11 @@ export class OrderService {
       };
 
     return updatedOrder;
+  }
+
+  private async getTodayOrders(): Promise<number> {
+    const orders = await this.orderRepository.indexDay();
+
+    return orders.length;
   }
 }

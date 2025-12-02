@@ -18,6 +18,17 @@ export class OrderRepository {
     return listedOrders as Order[];
   }
 
+  async indexDay(): Promise<Order[]> {
+    const todayOrders = await this.orderModel.find({
+      ordered: {
+        $gte: new Date(new Date().setHours(0, 0, 0)),
+        $lt: new Date(new Date().setHours(23, 59, 59)),
+      },
+    });
+
+    return todayOrders as Order[];
+  }
+
   async findOne(id: string): Promise<Order | null> {
     const foundOrder = await this.orderModel.findById(id);
 

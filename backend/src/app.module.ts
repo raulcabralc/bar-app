@@ -5,12 +5,14 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
 import { WorkerModule } from "./worker/worker.module";
 import { BusinessModule } from "./business/business.module";
+import { NotificationsModule } from "./notifications/notifications.module";
 
 @Module({
   imports: [
     OrderModule,
     WorkerModule,
     BusinessModule,
+    NotificationsModule,
 
     ConfigModule.forRoot({
       isGlobal: true,

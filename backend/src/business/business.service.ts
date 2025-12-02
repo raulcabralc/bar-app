@@ -8,10 +8,14 @@ import { PaymentMethod } from "src/order/types/enums/payment-method.enum";
 import { Origin } from "src/order/types/enums/origin.enum";
 import { ItemCategory } from "src/order/types/enums/item-category.enum";
 import { WeekDay } from "./types/enums/week-day.enum";
+import { NotificationsGateway } from "src/notifications/notifications.gateway";
 
 @Injectable()
 export class BusinessService {
-  constructor(private readonly businessRepository: BusinessRepository) {}
+  constructor(
+    private readonly businessRepository: BusinessRepository,
+    private readonly notificationsGateway: NotificationsGateway,
+  ) {}
 
   async findOne(id: string): Promise<Business | BusinessReturn> {
     const business = await this.businessRepository.findOne(id);
@@ -183,6 +187,17 @@ export class BusinessService {
     );
 
     if (!result) {
+      this.notificationsGateway.notifyAnalyticsUpdate({
+        type: "dailySummary",
+        data: {
+          totalRevenue: 0,
+          totalOrders: 0,
+          totalDiscount: 0,
+          totalDeliveryFee: 0,
+          averageTicket: 0,
+        },
+      });
+
       return {
         totalRevenue: 0,
         totalOrders: 0,
@@ -191,6 +206,11 @@ export class BusinessService {
         averageTicket: 0,
       };
     }
+
+    this.notificationsGateway.notifyAnalyticsUpdate({
+      type: "dailySummary",
+      data: result,
+    });
 
     return result;
   }
