@@ -1,0 +1,92 @@
+import { ChefHat, ClipboardPlus, LayoutGrid, ReceiptText } from "lucide-react";
+import {
+  BoldSpan,
+  Card,
+  CardHeader,
+  DashboardContainer,
+  DashboardGrid,
+  Number,
+  ProgressBar,
+  ProgressTrack,
+  TitleContainer,
+  TitleImage,
+  TitleText,
+} from "./styled";
+
+import { restaurantMock } from "@/restaurant-mock";
+import { ordersMock } from "@/orders-mock";
+
+function Dashboard() {
+  const preparingOrders = ordersMock.filter(
+    (order) => order.status === "PREPARING",
+  );
+  const lateOrders = ordersMock.filter((order) => order.priority === "HIGH");
+
+  const totalTables = restaurantMock.totalTables;
+  const occupiedTables = 12;
+  const occupancyPercent = (occupiedTables / totalTables) * 100;
+
+  return (
+    <>
+      <DashboardContainer>
+        <TitleContainer>
+          <TitleImage src={restaurantMock.image} alt="Logo" />
+          <TitleText>{restaurantMock.name}</TitleText>
+        </TitleContainer>
+
+        <DashboardGrid>
+          <Card to="/orders">
+            <CardHeader>
+              <ChefHat size={20} /> Status da Cozinha
+            </CardHeader>
+            <span>
+              <Number>{preparingOrders.length}</Number> pedidos em{" "}
+              <BoldSpan>produção</BoldSpan>.
+            </span>
+            <span>
+              {lateOrders.length > 0 ? (
+                <Number>{lateOrders.length}</Number>
+              ) : (
+                <BoldSpan>0</BoldSpan>
+              )}{" "}
+              pedidos <BoldSpan>atrasados</BoldSpan>.
+            </span>
+          </Card>
+
+          <Card to="">
+            <CardHeader>
+              <LayoutGrid size={20} /> Ocupação de Mesas
+            </CardHeader>
+            <span>
+              {occupiedTables < totalTables ? (
+                <BoldSpan>{occupiedTables}</BoldSpan>
+              ) : (
+                <Number>{occupiedTables}</Number>
+              )}{" "}
+              / <Number>{totalTables}</Number> mesas ocupadas.
+            </span>
+            <ProgressTrack>
+              <ProgressBar $percent={occupancyPercent} />
+            </ProgressTrack>
+          </Card>
+
+          <Card className="dotted" to="/orders/create">
+            <CardHeader>
+              <ClipboardPlus size={20} /> Novo Pedido
+            </CardHeader>
+            <span>Lançar novo pedido para mesa.</span>
+          </Card>
+
+          <Card className="dotted" to="/orders/close">
+            <CardHeader>
+              <ReceiptText size={20} /> Fechar conta
+            </CardHeader>
+            <span>Encerrar atendimento e emitir conta.</span>
+          </Card>
+        </DashboardGrid>
+      </DashboardContainer>
+    </>
+  );
+}
+
+export default Dashboard;

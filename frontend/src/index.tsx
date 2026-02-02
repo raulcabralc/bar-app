@@ -1,10 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { GlobalStyle, SidebarRespect } from "./styles/global";
-import Sidebar from "./components/Sidebar";
+import { GlobalStyle } from "./styles/global";
 import { BrowserRouter } from "react-router-dom";
 import { CustomThemeProvider } from "./contexts/ThemeContext";
-import Dashboard from "./pages/Dashboard";
+import Router from "./Router";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,
@@ -14,10 +13,7 @@ root.render(
     <BrowserRouter>
       <CustomThemeProvider>
         <GlobalStyle />
-        <Sidebar />
-        <SidebarRespect>
-          <Dashboard />
-        </SidebarRespect>
+        <Router />
       </CustomThemeProvider>
     </BrowserRouter>
   </React.StrictMode>,
