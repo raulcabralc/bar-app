@@ -4,6 +4,7 @@ import { WeekDay } from "./types/enums/week-day.enum";
 import { ItemsDenormalized } from "./types/interfaces/items-denormalized.interface";
 import { Origin } from "src/order/types/enums/origin.enum";
 import { OrderType } from "src/order/types/enums/type.enum";
+import mongoose from "mongoose";
 
 @Schema()
 export class Business {
@@ -86,6 +87,9 @@ export class Business {
 
   @Prop({ required: false })
   cancellationReason?: string;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, required: true })
+  restaurantId: mongoose.Types.ObjectId;
 }
 
 export const BusinessSchema = SchemaFactory.createForClass(Business);

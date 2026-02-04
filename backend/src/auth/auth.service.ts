@@ -25,10 +25,13 @@ export class AuthService {
   }
 
   async login(worker: any) {
+    const w = worker._doc;
+
     const payload = {
-      sub: worker._doc._id.toString(),
-      email: worker._doc.email,
-      role: worker._doc.role,
+      sub: w._id.toString(),
+      email: w.email,
+      role: w.role,
+      restaurant: w.restaurantId.toString(),
     };
 
     return {

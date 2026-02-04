@@ -2,6 +2,7 @@ import {
   IsArray,
   IsBoolean,
   IsDateString,
+  IsMongoId,
   IsNumber,
   IsOptional,
   IsString,
@@ -91,4 +92,7 @@ export class BusinessDTO {
   @IsOptional()
   @IsString()
   cancellationReason?: string;
+
+  @IsMongoId()
+  restaurantId: string;
 }

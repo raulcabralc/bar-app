@@ -17,8 +17,11 @@ export class BusinessService {
     private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
-  async findOne(id: string): Promise<Business | BusinessReturn> {
-    const business = await this.businessRepository.findOne(id);
+  async findOne(
+    restaurantId: string,
+    id: string,
+  ): Promise<Business | BusinessReturn> {
+    const business = await this.businessRepository.findOne(restaurantId, id);
 
     if (!business)
       return {
@@ -29,8 +32,14 @@ export class BusinessService {
     return business as Business;
   }
 
-  async findByOrderId(id: string): Promise<Business | BusinessReturn> {
-    const business = await this.businessRepository.findByOrderId(id);
+  async findByOrderId(
+    restaurantId: string,
+    id: string,
+  ): Promise<Business | BusinessReturn> {
+    const business = await this.businessRepository.findByOrderId(
+      restaurantId,
+      id,
+    );
 
     if (!business)
       return {
@@ -170,7 +179,7 @@ export class BusinessService {
 
   /// CONSULTAS AGREGADAS
 
-  async getDailySummary(date?: string) {
+  async getDailySummary(restaurantId: string, date?: string) {
     if (!date) {
       date = new Date().toISOString().split("T")[0].slice(0, 10);
     }
@@ -184,6 +193,7 @@ export class BusinessService {
     const result = await this.businessRepository.getDailySummary(
       startOfDay,
       endOfDay,
+      restaurantId,
     );
 
     if (!result) {
@@ -215,20 +225,23 @@ export class BusinessService {
     return result;
   }
 
-  async getAverageTicketByWaiter() {
-    return await this.businessRepository.getAverageTicketByWaiter();
+  async getAverageTicketByWaiter(restaurantId: string) {
+    return await this.businessRepository.getAverageTicketByWaiter(restaurantId);
   }
 
-  async getTotalSalesByOrigin() {
-    return await this.businessRepository.getTotalSalesByOrigin();
+  async getTotalSalesByOrigin(restaurantId: string) {
+    return await this.businessRepository.getTotalSalesByOrigin(restaurantId);
   }
 
-  async getTopSellingItems(limit?: number) {
+  async getTopSellingItems(restaurantId: string, limit?: number) {
     if (!limit) {
       limit = 10;
     }
 
-    return await this.businessRepository.getTopSellingItems(limit);
+    return await this.businessRepository.getTopSellingItems(
+      restaurantId,
+      limit,
+    );
   }
 
   /// CONSULTAS GERAIS
@@ -236,6 +249,7 @@ export class BusinessService {
   // DATA
 
   async findByDateRange(
+    restaurantId: string,
     startValue: Date,
     endValue?: Date,
   ): Promise<Business[] | BusinessReturn> {
@@ -250,10 +264,17 @@ export class BusinessService {
       endValue = startValue;
     }
 
-    return await this.businessRepository.findByDateRange(startValue, endValue);
+    return await this.businessRepository.findByDateRange(
+      restaurantId,
+      startValue,
+      endValue,
+    );
   }
 
-  async findByWeekDay(weekDay: WeekDay): Promise<Business[] | BusinessReturn> {
+  async findByWeekDay(
+    restaurantId: string,
+    weekDay: WeekDay,
+  ): Promise<Business[] | BusinessReturn> {
     if (!weekDay || !Object.values(WeekDay).includes(weekDay)) {
       return {
         success: false,
@@ -261,10 +282,11 @@ export class BusinessService {
       };
     }
 
-    return await this.businessRepository.findByWeekDay(weekDay);
+    return await this.businessRepository.findByWeekDay(restaurantId, weekDay);
   }
 
   async findByHourSlot(
+    restaurantId: string,
     startValue: number,
     endValue?: number,
   ): Promise<Business[] | BusinessReturn> {
@@ -279,12 +301,17 @@ export class BusinessService {
       endValue = startValue;
     }
 
-    return await this.businessRepository.findByHourSlot(startValue, endValue);
+    return await this.businessRepository.findByHourSlot(
+      restaurantId,
+      startValue,
+      endValue,
+    );
   }
 
   // FINANCEIRO
 
   async findByDiscount(
+    restaurantId: string,
     startValue: number,
     endValue?: number,
   ): Promise<Business[] | BusinessReturn> {
@@ -299,10 +326,15 @@ export class BusinessService {
       endValue = startValue;
     }
 
-    return await this.businessRepository.findByDiscount(startValue, endValue);
+    return await this.businessRepository.findByDiscount(
+      restaurantId,
+      startValue,
+      endValue,
+    );
   }
 
   async findByDeliveryFee(
+    restaurantId: string,
     startValue: number,
     endValue?: number,
   ): Promise<Business[] | BusinessReturn> {
@@ -318,12 +350,14 @@ export class BusinessService {
     }
 
     return await this.businessRepository.findByDeliveryFee(
+      restaurantId,
       startValue,
       endValue,
     );
   }
 
   async findByCustomerCount(
+    restaurantId: string,
     startValue: number,
     endValue?: number,
   ): Promise<Business[] | BusinessReturn> {
@@ -339,12 +373,14 @@ export class BusinessService {
     }
 
     return await this.businessRepository.findByCustomerCount(
+      restaurantId,
       startValue,
       endValue,
     );
   }
 
   async findByPaymentMethod(
+    restaurantId: string,
     paymentMethod: PaymentMethod,
   ): Promise<Business[] | BusinessReturn> {
     if (
@@ -357,10 +393,16 @@ export class BusinessService {
       };
     }
 
-    return await this.businessRepository.findByPaymentMethod(paymentMethod);
+    return await this.businessRepository.findByPaymentMethod(
+      restaurantId,
+      paymentMethod,
+    );
   }
 
-  async findByOrigin(origin: Origin): Promise<Business[] | BusinessReturn> {
+  async findByOrigin(
+    restaurantId: string,
+    origin: Origin,
+  ): Promise<Business[] | BusinessReturn> {
     if (!origin || !Object.values(Origin).includes(origin)) {
       return {
         success: false,
@@ -368,12 +410,13 @@ export class BusinessService {
       };
     }
 
-    return await this.businessRepository.findByOrigin(origin);
+    return await this.businessRepository.findByOrigin(restaurantId, origin);
   }
 
   // ESTOQUE & PRODUTO
 
   async findByTotalItems(
+    restaurantId: string,
     startValue: number,
     endValue?: number,
   ): Promise<Business[] | BusinessReturn> {
@@ -388,10 +431,15 @@ export class BusinessService {
       endValue = startValue;
     }
 
-    return await this.businessRepository.findByTotalItems(startValue, endValue);
+    return await this.businessRepository.findByTotalItems(
+      restaurantId,
+      startValue,
+      endValue,
+    );
   }
 
   async findByTimeToStartPreparing(
+    restaurantId: string,
     startValue: number,
     endValue?: number,
   ): Promise<Business[] | BusinessReturn> {
@@ -407,12 +455,14 @@ export class BusinessService {
     }
 
     return await this.businessRepository.findByTimeToStartPreparing(
+      restaurantId,
       startValue,
       endValue,
     );
   }
 
   async findByTimePreparing(
+    restaurantId: string,
     startValue: number,
     endValue?: number,
   ): Promise<Business[] | BusinessReturn> {
@@ -428,12 +478,14 @@ export class BusinessService {
     }
 
     return await this.businessRepository.findByTimePreparing(
+      restaurantId,
       startValue,
       endValue,
     );
   }
 
   async findByTimeToDelivery(
+    restaurantId: string,
     startValue: number,
     endValue?: number,
   ): Promise<Business[] | BusinessReturn> {
@@ -449,12 +501,18 @@ export class BusinessService {
     }
 
     return await this.businessRepository.findByTimeToDelivery(
+      restaurantId,
       startValue,
       endValue,
     );
   }
 
-  async findByWaiterId(waiterId: string): Promise<Business[] | BusinessReturn> {
+  // FUNCIONÁRIOS & DESEMPENHO
+
+  async findByWaiterId(
+    restaurantId: string,
+    waiterId: string,
+  ): Promise<Business[] | BusinessReturn> {
     if (!waiterId) {
       return {
         success: false,
@@ -462,10 +520,11 @@ export class BusinessService {
       };
     }
 
-    return await this.businessRepository.findByWaiterId(waiterId);
+    return await this.businessRepository.findByWaiterId(restaurantId, waiterId);
   }
 
   async findByWaiterName(
+    restaurantId: string,
     waiterName: string,
   ): Promise<Business[] | BusinessReturn> {
     if (!waiterName) {
@@ -475,10 +534,14 @@ export class BusinessService {
       };
     }
 
-    return await this.businessRepository.findByWaiterName(waiterName);
+    return await this.businessRepository.findByWaiterName(
+      restaurantId,
+      waiterName,
+    );
   }
 
   async findByTransactionHandlerId(
+    restaurantId: string,
     transactionHandlerId: string,
   ): Promise<Business[] | BusinessReturn> {
     if (!transactionHandlerId) {
@@ -489,11 +552,13 @@ export class BusinessService {
     }
 
     return await this.businessRepository.findByTransactionHandlerId(
+      restaurantId,
       transactionHandlerId,
     );
   }
 
   async findByTransactionHandlerName(
+    restaurantId: string,
     transactionHandlerName: string,
   ): Promise<Business[] | BusinessReturn> {
     if (!transactionHandlerName) {
@@ -504,11 +569,13 @@ export class BusinessService {
     }
 
     return await this.businessRepository.findByTransactionHandlerName(
+      restaurantId,
       transactionHandlerName,
     );
   }
 
   async findByDeliveryNeighborhood(
+    restaurantId: string,
     deliveryNeighborhood: string,
   ): Promise<Business[] | BusinessReturn> {
     if (!deliveryNeighborhood) {
@@ -519,15 +586,17 @@ export class BusinessService {
     }
 
     return await this.businessRepository.findByDeliveryNeighborhood(
+      restaurantId,
       deliveryNeighborhood,
     );
   }
 
-  async findByCanceled(): Promise<Business[]> {
-    return await this.businessRepository.findByCanceled();
+  async findByCanceled(restaurantId: string): Promise<Business[]> {
+    return await this.businessRepository.findByCanceled(restaurantId);
   }
 
   async findByCancelReason(
+    restaurantId: string,
     reason: string,
   ): Promise<Business[] | BusinessReturn> {
     if (!reason) {
@@ -537,6 +606,9 @@ export class BusinessService {
       };
     }
 
-    return await this.businessRepository.findByCancelReason(reason);
+    return await this.businessRepository.findByCancelReason(
+      restaurantId,
+      reason,
+    );
   }
 }

@@ -17,15 +17,19 @@ export class BusinessRepository {
     @InjectModel("Business") private readonly businessModel: Model<Business>,
   ) {}
 
-  async findOne(id: string): Promise<Business> {
-    const business = await this.businessModel.findById(id);
+  async findOne(restaurantId: string, id: string): Promise<Business> {
+    const business = await this.businessModel.findOne({
+      _id: id,
+      restaurantId: restaurantId,
+    });
 
     return business as Business;
   }
 
-  async findByOrderId(id: string): Promise<Business> {
+  async findByOrderId(restaurantId: string, id: string): Promise<Business> {
     const business = await this.businessModel.findOne({
       originalOrderId: id,
+      restaurantId: restaurantId,
     });
 
     return business as Business;
@@ -42,11 +46,13 @@ export class BusinessRepository {
   async getDailySummary(
     startOfDay: Date,
     endOfDay: Date,
+    restaurantId: string,
   ): Promise<DailySummary> {
     const dailySummary = await this.businessModel.aggregate([
       {
         $match: {
           date: { $gte: startOfDay, $lte: endOfDay },
+          restaurantId: restaurantId,
         },
       },
       {
@@ -73,8 +79,13 @@ export class BusinessRepository {
     return dailySummary[0] as DailySummary;
   }
 
-  async getAverageTicketByWaiter(): Promise<AverageTicket[]> {
+  async getAverageTicketByWaiter(
+    restaurantId: string,
+  ): Promise<AverageTicket[]> {
     const result = await this.businessModel.aggregate([
+      {
+        $match: { restaurantId: restaurantId },
+      },
       {
         $group: {
           _id: "$waiterId",
@@ -98,8 +109,11 @@ export class BusinessRepository {
     return result as AverageTicket[];
   }
 
-  async getTotalSalesByOrigin(): Promise<SalesByOrigin[]> {
+  async getTotalSalesByOrigin(restaurantId: string): Promise<SalesByOrigin[]> {
     const result = await this.businessModel.aggregate([
+      {
+        $match: { restaurantId: restaurantId },
+      },
       {
         $group: {
           _id: "$origin",
@@ -122,10 +136,16 @@ export class BusinessRepository {
     return result as SalesByOrigin[];
   }
 
-  async getTopSellingItems(limit: number): Promise<TopItems[]> {
+  async getTopSellingItems(
+    restaurantId: string,
+    limit: number,
+  ): Promise<TopItems[]> {
     const result = await this.businessModel.aggregate([
       {
         $unwind: "$itemsDenormalized",
+      },
+      {
+        $match: { restaurantId: restaurantId },
       },
       {
         $group: {
@@ -159,28 +179,39 @@ export class BusinessRepository {
 
   // DATA
 
-  async findByDateRange(startDate: Date, endDate: Date): Promise<Business[]> {
+  async findByDateRange(
+    restaurantId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       date: { $gte: startDate, $lte: endDate },
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
-  async findByWeekDay(weekDay: WeekDay): Promise<Business[]> {
+  async findByWeekDay(
+    restaurantId: string,
+    weekDay: WeekDay,
+  ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       weekDay: weekDay,
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
   async findByHourSlot(
+    restaurantId: string,
     startHour: number,
     endHour: number,
   ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       hourSlot: { $gte: startHour, $lte: endHour },
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
@@ -189,49 +220,63 @@ export class BusinessRepository {
   // FINANCEIRO
 
   async findByDiscount(
+    restaurantId: string,
     startDiscount: number,
     endDiscount: number,
   ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       discount: { $gte: startDiscount, $lte: endDiscount },
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
   async findByDeliveryFee(
+    restaurantId: string,
     startDeliveryFee: number,
     endDeliveryFee: number,
   ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       deliveryFee: { $gte: startDeliveryFee, $lte: endDeliveryFee },
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
   async findByCustomerCount(
+    restaurantId: string,
     startCustomers: number,
     endCustomers: number,
   ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       customerCount: { $gte: startCustomers, $lte: endCustomers },
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
-  async findByPaymentMethod(paymentMethod: PaymentMethod): Promise<Business[]> {
+  async findByPaymentMethod(
+    restaurantId: string,
+    paymentMethod: PaymentMethod,
+  ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       paymentMethod,
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
-  async findByOrigin(origin: Origin): Promise<Business[]> {
+  async findByOrigin(
+    restaurantId: string,
+    origin: Origin,
+  ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       origin,
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
@@ -240,108 +285,135 @@ export class BusinessRepository {
   // ESTOQUE & PRODUTO
 
   async findByTotalItems(
+    restaurantId: string,
     startTotalItems: number,
     endTotalItems: number,
   ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       totalItemsCount: { $gte: startTotalItems, $lte: endTotalItems },
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
-  // DESEMPENHO DOS FUNCIONÁRIOS & LOGÍSTICA
-
   async findByTimeToStartPreparing(
+    restaurantId: string,
     startValue: number,
     endValue: number,
   ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       timeToStartPreparing: { $gte: startValue, $lte: endValue },
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
   async findByTimePreparing(
+    restaurantId: string,
     startTimePreparing: number,
     endTimePreparing: number,
   ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       timePreparing: { $gte: startTimePreparing, $lte: endTimePreparing },
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
   async findByTimeToDelivery(
+    restaurantId: string,
     startTimeToDelivery: number,
     endTimeToDelivery: number,
   ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       timeToDelivery: { $gte: startTimeToDelivery, $lte: endTimeToDelivery },
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
-  async findByWaiterId(waiterId: string): Promise<Business[]> {
+  // FUNCIONÁRIOS & DESEMPENHO
+
+  async findByWaiterId(
+    restaurantId: string,
+    waiterId: string,
+  ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       waiterId,
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
-  async findByWaiterName(waiterName: string): Promise<Business[]> {
+  async findByWaiterName(
+    restaurantId: string,
+    waiterName: string,
+  ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       waiterName,
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
   async findByTransactionHandlerId(
+    restaurantId: string,
     transactionHandlerId: string,
   ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       transactionHandlerId,
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
   async findByTransactionHandlerName(
+    restaurantId: string,
     transactionHandlerName: string,
   ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       transactionHandlerName,
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
   async findByDeliveryNeighborhood(
+    restaurantId: string,
     deliveryNeighborhood: string,
   ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       deliveryNeighborhood,
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
-  async findByCanceled(): Promise<Business[]> {
+  async findByCanceled(restaurantId: string): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       isCanceled: true,
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
   }
 
-  async findByCancelReason(reason: string): Promise<Business[]> {
+  async findByCancelReason(
+    restaurantId: string,
+    reason: string,
+  ): Promise<Business[]> {
     const businessList = await this.businessModel.find({
       cancellationReason: reason,
+      restaurantId: restaurantId,
     });
 
     return businessList as Business[];
